@@ -40,7 +40,7 @@ class ProgramacaoBTP:
             "tpPesquisa": "0",
             "dtInicial": data_inicial_str ,
             "dtFinal": "",
-            "id": "3911829",
+            "id": "",
         }
 
         # Cookies
