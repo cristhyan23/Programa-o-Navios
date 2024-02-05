@@ -1,6 +1,5 @@
 import requests
 import pandas as pd
-from openpyxl.utils.dataframe import dataframe_to_rows
 from io import BytesIO
 import warnings
 from openpyxl import Workbook
@@ -38,20 +37,6 @@ class ProgramacaoItapoa:
             # Exclua todas as linhas em que a coluna 'status' tem a informação 'closed'
             df = df[~df['Status'].isin(['CLOSED', 'DEPARTED'])]
             df['Terminal'] = df.apply(lambda row: 'ITAPOA' if row['Navio'] != '' else "", axis=1)
-
-            # Defina o caminho da pasta e o nome do arquivo
-
-            # Crie o caminho completo
-
-
-            # Crie um Workbook e adicione um Worksheet
-            wb = Workbook()
-            ws = wb.active
-
-            # Passe os dados do DataFrame para o Worksheet
-            for row in dataframe_to_rows(df, index=False, header=True):
-                ws.append(row)
-
             return df
         else:
             print(f"Erro ao acessar o relatório. Código de status: {response.status_code}")
