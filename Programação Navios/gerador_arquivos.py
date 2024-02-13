@@ -10,6 +10,7 @@ from pathlib import Path
 import pandas as pd
 from functools import reduce
 import os
+from datetime import date,datetime
 
 
 """ Classe resposavel por inicializar as funções de cada terminal tratar os dados para ficares com as mesmas colunas e unir em um relatório"""
@@ -26,7 +27,7 @@ class Gerador_Informacoes_Portos:
         #colunas padrão do relatório
         self.dados_relatorio_unificado = ["Terminal", "Navio", "Viagem", "Serviço", "Agencia", "Deadline",
                                      "Previsão Chegada", "Chegada", "Previsão Atracacao", "Atracacao", "Previsão Saída"]
-        self.obj_excel = self.unificar_arquivos()
+        self.obj_excel = self.unificar_arquivos_e_salvar_em_excel_em_um_caminho()
 
     # função responsavel por processar o data frame de cada terminal gerar uma copia ja com as colunas novas tratadas
     def processar_dataframe(self, df, dados_desejados):
@@ -39,7 +40,7 @@ class Gerador_Informacoes_Portos:
         return base
 
     # função responsavel de gerar os gatilhos para atualizar cada daframe e atualizar e salvar o arquivo final
-    def unificar_arquivos(self):
+    def unificar_arquivos_e_salvar_em_excel_em_um_caminho(self):
 
         df_btp = self.btp.gerar_informacao_porto()
         df_dpw = self.dpw.gerar_informacao_porto()
@@ -86,8 +87,10 @@ class Gerador_Informacoes_Portos:
 
 
         #salvar dataframa em excel na pasta dentro da pasta arquivo_excel dentro da pasta que esta salvo o codigo
+        data_atualizacao = date.today()
+        data_formatada = datetime.strftime(data_atualizacao,'%d-%m-%Y')
         caminho_pasta = os.path.abspath(os.path.dirname(__file__))
-        nome_arquivo = 'schedule_navios_consolidado.xlsx'
+        nome_arquivo = f'schedule_navios_{data_formatada}.xlsx'
         caminho_sub_pasta = Path(caminho_pasta) /'arquivos_excel'
         caminho_completo = os.path.join(caminho_sub_pasta, nome_arquivo)
         df_resultado.to_excel(caminho_completo, index=False)
@@ -96,3 +99,7 @@ class Gerador_Informacoes_Portos:
 
 if __name__ == "__main__":
     gerador = Gerador_Informacoes_Portos()
+
+
+
+
