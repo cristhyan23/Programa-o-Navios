@@ -11,8 +11,6 @@ class ProgramacaoDPW:
     def acesso_consulta_escala_prevista(self):
         data_inicial = datetime.today()
         data_inicial_str = data_inicial.strftime('%d/%m/%Y')
-        data_final = data_inicial + timedelta(days=21)
-        data_final_str = data_final.strftime('%d/%m/%Y')
 
         url = "http://www.embraportonline.com.br/Navios/buscarEscalaPesquisa"
 
@@ -20,7 +18,7 @@ class ProgramacaoDPW:
         payload = {
             'prNroOperacao': '',
             'prDataInicial': data_inicial_str,
-            'prDataFinal': data_final_str,
+            'prDataFinal': '',
             'prArmador': '',
             'prServico': '',
             'skipresult': '0',
