@@ -6,7 +6,6 @@ from codigo_terminais.salvador_programacao import ProgramacaoTecon
 from codigo_terminais.sts_programacao import ProgramacaoSTS
 from codigo_terminais.tcp_programacao import ProgramacaoTCP
 from codigo_terminais.vdc_programacao import ProgramacaoVDC
-from gerador_arquivo_para_otmz import GerarArquivoOtmz
 import pandas as pd
 from functools import reduce
 import os
@@ -95,8 +94,7 @@ class Gerador_Informacoes_Portos:
         caminho_completo = os.path.join(caminho_sub_pasta, nome_arquivo)
         df_resultado.to_excel(caminho_completo, index=False)
         print(f"Arquivo salvo em: {caminho_completo}")
-        #GERAR BASE PARA OTIMIZADOR
-        Executar = GerarArquivoOtmz(caminho_completo)
+
 
 if __name__ == "__main__":
     gerador = Gerador_Informacoes_Portos()
