@@ -1,6 +1,7 @@
 import requests
 from datetime import datetime
 import pandas as pd
+from bs4 import BeautifulSoup
 
 """Classe que contem a geração de um Datframe com os dados do terminal portuário de Santos BTP """
 class ProgramacaoBTP:
@@ -11,14 +12,26 @@ class ProgramacaoBTP:
 
         url = "https://tas.btp.com.br/ConsultasLivres/ListaAtracacao"
 
+        # Cria uma sessão para manter cookies
+        session = requests.Session()
+
+        # Faz uma requisição GET para a página
+        response = session.get(url)
+
+        # Verifica se a requisição foi bem-sucedida
+        if response.status_code == 200:
+            # Parseia o conteúdo HTML da página
+            soup = BeautifulSoup(response.content, 'html.parser')
+            
+            # Encontra o campo input com o nome __RequestVerificationToken
+            token_input = soup.find('input', {'name': '__RequestVerificationToken'})
+            token_value = token_input['value']
         # Headers
         headers = {
-            "authority":'tas.btp.com.br',
             "method":"POST",
             "path":"/ConsultasLivres/ListaAtracacao",
             "scheme":"https",
-            "__requestverificationtoken":"Wn4DmqK_5fcqk2-dlbICuhnlkIG1MGyFv_K65bai54Vr5VGFWWGWp7ODr1nZqh7h40BvYPzTkcSIZ98_pwfMsWTOsDRH2gsCAGlpKkp1169ZD1QU2jIuzDIBnMyJvVwOjTTrX--XRFOhb2H2PUcj-A2:OrdPC-uzSpL2_VG-JiqbfraJyXU292ojo7V0lW1mdMJQTXY20-RQu3i2PX25ANi3m7DUAh89nYI3gWi13JBemEPiYDB9zZz8gWMCieMWtOHdMfVpwqM7ysUAAAy3mocmpd6sDPkpgmAnkVZzXWUbTXwXMhGfh7uySVYMgVurJDs1",
-            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "__requestverificationtoken":token_value,
             "Accept-Encoding": "gzip, deflate, br",
             "Accept-Language": "en-US,en;q=0.9,pt-BR;q=0.8,pt;q=0.7,de-DE;q=0.6,de;q=0.5,es-ES;q=0.4,es;q=0.3,fr-FR;q=0.2,fr;q=0.1",
             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
@@ -33,26 +46,24 @@ class ProgramacaoBTP:
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             "X-Requested-With": "XMLHttpRequest",
         }
-
+        
         # Form data
         data = {
             "dias": "0",
             "tpPesquisa": "0",
-            "dtInicial": data_inicial_str ,
-            "dtFinal": "",
+            "dtInicial":data_inicial_str,
+            "dtFinal": '',
             "id": "",
         }
 
-        # Cookies
-        cookies = {
-            "TAS_SessionId": "fwduvpqk25zqddeau1uxbmgi",
-            "_gid": "GA1.3.1719045680.1706177849",
-            "_ga": "GA1.1.1027923941.1700770676",
-            "_ga_GCK1HKXQYX": "GS1.1.1706177848.3.1.1706177929.60.0.0",
-        }
+
         try:
             # Make the request
-            response = requests.post(url, headers=headers, data=data)
+            try:
+                response = requests.post(url, headers=headers, data=data,timeout=300)
+            except Exception:
+                response = requests.post(url, headers=headers, data=data,timeout=300,verify=False)
+                
             if response.status_code == 200:
                 # A solicitação foi bem-sucedida
                 objeto_lista = response.json().get('Records',[])
@@ -68,7 +79,7 @@ class ProgramacaoBTP:
             if data and data.startswith('/Date('):
                 data_em_milissegundos = data.replace("/Date(", "").replace(")/", "")
                 data_em_segundos = int(data_em_milissegundos) / 1000
-                data_real = datetime.utcfromtimestamp(data_em_segundos)
+                data_real = datetime.fromtimestamp(data_em_segundos)
                 return data_real.strftime('%d/%m/%Y %H:%M')
             else:
                 return data
@@ -92,8 +103,12 @@ class ProgramacaoBTP:
             df = pd.DataFrame(lista_escala)
             df = self.converter_datas(df)
             df['Terminal'] = df.apply(lambda row: 'BTP' if row['Navio'] != '' else "", axis=1)
+            df['cidade_porto'] = df.apply(lambda row: 'santos' if row['Navio'] != '' else "", axis=1)
             # Construir o caminho completo do arquivo Excel usando pathlib
             return df
         else:
             print("Não foi possível obter dados válidos para a lista de escala.")
 
+if __name__ == "__main__":
+    btp = ProgramacaoBTP()
+    btp.gerar_informacao_porto()
